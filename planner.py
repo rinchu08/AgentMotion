@@ -1,10 +1,7 @@
 import os
-import json
 
 from dotenv import load_dotenv
 from google import genai
-
-from prompts import ROBOT_PROMPT
 
 load_dotenv()
 
@@ -13,26 +10,33 @@ client = genai.Client(
 )
 
 
-def generate_robot_plan(instruction):
-
-    prompt = ROBOT_PROMPT.replace(
-    "{instruction}",
-    instruction
-)
+def describe_image(uploaded_image):
 
     response = client.models.generate_content(
+
         model="gemini-2.5-flash",
-        contents=prompt
+
+        contents=[
+            uploaded_image,
+            """
+            Describe everything you see in this image.
+
+            Focus on:
+
+            - Objects
+            - Colors
+            - Positions
+            - Table
+            - Bottles
+            - Cups
+            - Baskets
+            - Chairs
+            - Obstacles
+
+            Return a clear paragraph.
+            """
+        ]
+
     )
 
-    json_text = response.text.strip()
-
-    if json_text.startswith("```json"):
-        json_text = json_text.replace("```json", "").replace("```", "").strip()
-
-    elif json_text.startswith("```"):
-        json_text = json_text.replace("```", "").strip()
-
-    plan = json.loads(json_text)
-
-    return plan
+    return response.text

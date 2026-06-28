@@ -1,16 +1,35 @@
 ROBOT_PROMPT = """
 You are an expert robotics task planner.
 
-Convert the following instruction into structured JSON.
+You will receive:
+
+1. An IMAGE of a robot environment.
+2. A USER INSTRUCTION.
+
+Use BOTH the image and the instruction.
+
+Look carefully at the objects visible in the image.
+
+Identify:
+
+- Objects
+- Their locations
+- The destination
+- Any obstacles if visible
+
+Then generate a robot execution plan.
 
 Return ONLY valid JSON.
 
-Use EXACTLY this format.
+Use EXACTLY this format:
 
 {
     "task":"",
     "source":"",
     "destination":"",
+    "objects_detected":[
+        ""
+    ],
     "steps":[
         {
             "action":"",
@@ -23,23 +42,11 @@ Use EXACTLY this format.
 Rules:
 
 - Return ONLY JSON.
-- Every step must be a JSON object.
-- Never return explanations.
-
-Possible actions:
-
-detect_object
-move_to_object
-open_gripper
-close_gripper
-grasp_object
-verify_grasp
-lift_object
-move_to_location
-release_object
-return_home
+- Do NOT explain anything.
+- Use the uploaded image to identify objects.
+- Use the instruction to understand the task.
 
 Instruction:
 
-{instruction}
+<INSTRUCTION>
 """

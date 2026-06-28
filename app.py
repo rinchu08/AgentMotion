@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 
-from planner import generate_robot_plan
+from planner import describe_image
 from utils import save_plan
 
 # ============================================
@@ -21,6 +21,17 @@ st.set_page_config(
 with st.sidebar:
 
     st.title("🤖 AgentMotion")
+    uploaded_image = st.file_uploader(
+    "📷 Upload an Image",
+    type=["png", "jpg", "jpeg"]
+)
+
+if uploaded_image is not None:
+    st.image(
+        uploaded_image,
+        caption="Uploaded Image",
+        use_container_width=True
+    )
 
     st.markdown("---")
 
