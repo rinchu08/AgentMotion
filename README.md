@@ -100,7 +100,7 @@ streamlit run app.py
 - [x] Streamlit Web Interface
 - [x] JSON Export
 - [ ] Conversation History
-- [ ] Image Upload
+- [x] Image Upload
 - [ ] Gemini Vision Integration
 - [ ] ROS2 Command Generator
 - [ ] Robot Simulation
