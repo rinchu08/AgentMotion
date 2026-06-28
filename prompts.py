@@ -28,8 +28,8 @@ Use EXACTLY this format:
     "source":"",
     "destination":"",
     "objects_detected":[
-        ""
-    ],
+    ""
+],
     "steps":[
         {
             "action":"",

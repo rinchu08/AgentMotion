@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 
-from planner import describe_image
+from planner import generate_robot_plan
 from utils import save_plan
 
 # ============================================
@@ -21,16 +21,10 @@ st.set_page_config(
 with st.sidebar:
 
     st.title("🤖 AgentMotion")
-    uploaded_image = st.file_uploader(
-    "📷 Upload an Image",
-    type=["png", "jpg", "jpeg"]
-)
 
-if uploaded_image is not None:
-    st.image(
-        uploaded_image,
-        caption="Uploaded Image",
-        use_container_width=True
+    uploaded_image = st.file_uploader(
+        "📷 Upload an Image",
+        type=["png", "jpg", "jpeg"]
     )
 
     st.markdown("---")
@@ -70,42 +64,77 @@ instruction = st.text_area(
 
 if st.button("🚀 Generate Plan"):
 
-    if instruction.strip() == "":
-        st.warning("Please enter a robot instruction.")
+    if instruction.strip() == "" or uploaded_image is None:
+
+        st.warning("Please upload an image and enter an instruction.")
 
     else:
 
         try:
 
+            # ============================================
             # Generate Robot Plan
-            plan = generate_robot_plan(instruction)
+            # ============================================
 
-            # Increase Counter
+            with st.spinner("🤖 Gemini Vision is analyzing the image..."):
+
+                plan = generate_robot_plan(
+                    instruction,
+                    uploaded_image
+                )
+
             st.session_state.plans_generated += 1
 
             st.success("✅ Robot Plan Generated")
 
             st.divider()
 
-            # ====================================
-            # Task Information
-            # ====================================
+            # ============================================
+            # Objects Detected
+            # ============================================
 
-            col1, col2, col3 = st.columns(3)
+            if "objects_detected" in plan:
 
-            with col1:
+                st.header("👀 Objects Detected")
+
+                cols = st.columns(len(plan["objects_detected"]))
+
+                for col, obj in zip(cols, plan["objects_detected"]):
+
+                    with col:
+                        st.success(obj)
+
+                st.divider()
+
+            # ============================================
+            # Image + Task Summary
+            # ============================================
+
+            left, right = st.columns([2, 1])
+
+            with left:
+
+                st.subheader("📷 Uploaded Environment")
+
+                st.image(
+                    uploaded_image,
+                    use_container_width=True
+                )
+
+            with right:
+
+                st.subheader("📋 Task Summary")
+
                 st.metric(
                     "📦 Task",
                     plan.get("task", "N/A")
                 )
 
-            with col2:
                 st.metric(
                     "📍 Source",
                     plan.get("source", "N/A")
                 )
 
-            with col3:
                 st.metric(
                     "🎯 Destination",
                     plan.get("destination", "N/A")
@@ -113,9 +142,9 @@ if st.button("🚀 Generate Plan"):
 
             st.divider()
 
-            # ====================================
+            # ============================================
             # Execution Steps
-            # ====================================
+            # ============================================
 
             st.header("🤖 Execution Steps")
 
@@ -123,38 +152,27 @@ if st.button("🚀 Generate Plan"):
 
                 with st.container():
 
-                    st.subheader(f"Step {i}")
+                    st.info(f"""
+### Step {i}
 
-                    if isinstance(step, dict):
+🤖 **Action:** {step.get("action", "-")}
+
+📦 **Object:** {step.get("object", "-")}
+
+📍 **Location:** {step.get("location", "-")}
+""")
+
+                    if step.get("target_location"):
 
                         st.write(
-                            f"**Action:** {step.get('action', 'N/A')}"
+                            f"🎯 **Target:** {step['target_location']}"
                         )
-
-                        if step.get("object"):
-                            st.write(
-                                f"**Object:** {step['object']}"
-                            )
-
-                        if step.get("location"):
-                            st.write(
-                                f"**Location:** {step['location']}"
-                            )
-
-                        if step.get("target_location"):
-                            st.write(
-                                f"**Target Location:** {step['target_location']}"
-                            )
-
-                    else:
-
-                        st.write(step)
 
                     st.divider()
 
-            # ====================================
+            # ============================================
             # Save JSON
-            # ====================================
+            # ============================================
 
             filename = save_plan(plan)
 
@@ -172,3 +190,13 @@ if st.button("🚀 Generate Plan"):
         except Exception as e:
 
             st.error(f"❌ {e}")
+
+# ============================================
+# Footer
+# ============================================
+
+st.divider()
+
+st.caption(
+    "🤖 Built with ❤️ using Python • Streamlit • Gemini 2.5 Flash"
+)
